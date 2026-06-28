@@ -145,27 +145,33 @@ const cornerNDC = [[-1, -1], [1, -1], [1, 1], [-1, 1]]
 function groundCorner(nx, ny) {
   ray.setFromCamera(new THREE.Vector2(nx, ny), camera)
   const hit = new THREE.Vector3()
-  ray.ray.intersectPlane(groundPlane, hit)
-  return hit
+  const r = ray.ray.intersectPlane(groundPlane, hit)
+  return r ? hit : null          // null when the ray is parallel / above the horizon
 }
 
 function buildWalls() {
-  // remove old
   for (const b of wallBodies) { world.removeBody(b) }
   wallBodies.length = 0
 
+  // matrices must be current or rays come back garbage (and spawn degenerate walls)
+  camera.updateProjectionMatrix()
+  camera.updateMatrixWorld()
+
   const pts = cornerNDC.map(([x, y]) => groundCorner(x, y))
+  // fallback: if any corner misses the ground (extreme aspect / pitch), bail.
   if (pts.some(p => !p)) return
+  // polygon centroid (the visible ground quad is generally NOT centred on origin)
+  const ctr = new THREE.Vector3()
+  pts.forEach(p => ctr.add(p)); ctr.divideScalar(pts.length); ctr.y = 0
+
   for (let i = 0; i < 4; i++) {
     const a = pts[i], b = pts[(i + 1) % 4]
-    // edge direction (along screen edge on ground): b - a
-    const dir = new THREE.Vector3().subVectors(b, a).normalize()
-    // inward normal (toward centroid)
-    const mid = new THREE.Vector3().addVectors(a, b).multiplyScalar(0.5)
-    const ctr = new THREE.Vector3(0, 0, 0)
-    let inward = new THREE.Vector3().subVectors(ctr, mid)
-    inward.y = 0
-    // normal perpendicular to edge dir, in ground plane, pointing inward
+    const dir = new THREE.Vector3().subVectors(b, a)
+    if (dir.lengthSq() < 1e-6) continue             // skip degenerate edges
+    dir.normalize()
+    const mid = new THREE.Vector3().addVectors(a, b).multiplyScalar(0.5); mid.y = 0
+    let inward = new THREE.Vector3().subVectors(ctr, mid); inward.y = 0
+    // wall normal: perpendicular to the edge, in the ground plane
     const nrm = new THREE.Vector3().crossVectors(new THREE.Vector3(0, 1, 0), dir)
     if (nrm.dot(inward) < 0) nrm.negate()
     nrm.normalize()
