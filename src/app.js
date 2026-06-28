@@ -320,10 +320,9 @@ window.addEventListener('keydown', (e) => {
 // ---------------------------------------------------------------------------
 // Render loop
 // ---------------------------------------------------------------------------
-window.__DBG = { get dice(){return dice}, world, rollDice, isSettled, get rolling(){return rolling}, readDie: (d)=> {
-  // minimal inline read for debug
-  return null
-} }
+window.__DBG = { get dice(){return dice}, world, rollDice, isSettled, get rolling(){return rolling},
+  corners: () => cornerNDC.map(([x,y]) => { camera.updateProjectionMatrix(); camera.updateMatrixWorld(); const p = groundCorner(x,y); return p ? [p.x,p.y,p.z] : null }),
+  cam: () => ({ pos:[camera.position.x,camera.position.y,camera.position.z], fov:camera.fov, aspect:camera.aspect }) }
 const clock = new THREE.Clock()
 const step = 1 / 60
 let acc = 0
