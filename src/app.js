@@ -314,6 +314,10 @@ window.addEventListener('keydown', (e) => {
 // ---------------------------------------------------------------------------
 // Render loop
 // ---------------------------------------------------------------------------
+window.__DBG = { get dice(){return dice}, world, rollDice, isSettled, get rolling(){return rolling}, readDie: (d)=> {
+  // minimal inline read for debug
+  return null
+} }
 const clock = new THREE.Clock()
 const step = 1 / 60
 let acc = 0
