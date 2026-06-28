@@ -1,0 +1,161 @@
+/* Pure flat, minimal. No gradients, no pulsing. ---------------------------------- */
+:root {
+  --bg:        #0a0a0b;
+  --panel:     #111114;
+  --panel-2:   #16161a;
+  --line:      #1f1f24;
+  --line-2:    #2a2a31;
+  --ink:       #f4f1ea;
+  --ink-dim:   #8a8a92;
+  --accent:    #e8e1d2;
+  --accent-2:  #c9c2b2;
+  --good:      #9bd1a0;
+  --mono: "Söhne", ui-monospace, "SF Mono", "JetBrains Mono", Menlo, Consolas, monospace;
+  --sans: "Söhne", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Helvetica, Arial, sans-serif;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body { height: 100%; overscroll-behavior: none; }
+
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--sans);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  overflow: hidden;
+  touch-action: none;
+}
+
+#app { position: fixed; inset: 0; }
+
+#scene { position: absolute; inset: 0; display: block; }
+
+/* vase floor grid + vignette drawn in canvas; CSS only frames the UI ---------------- */
+
+/* TOP CONTROL SHELF --------------------------------------------------------------- */
+.shelf {
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 18px 22px;
+  background: linear-gradient(180deg, rgba(10,10,11,0.92), rgba(10,10,11,0));
+  pointer-events: none;
+}
+/* note: gradient is purely to fade UI chrome into scene edges, not a colored gradient */
+.shelf > * { pointer-events: auto; }
+
+.brand {
+  display: flex; align-items: baseline; gap: 10px;
+  letter-spacing: 0.18em; font-family: var(--mono);
+}
+.brand .mark { font-size: 13px; color: var(--ink); font-weight: 600; }
+.brand .sub  { font-size: 10px; color: var(--ink-dim); letter-spacing: 0.32em; }
+
+.controls {
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  backdrop-filter: blur(8px);
+}
+
+.field { display: flex; align-items: center; gap: 8px; padding: 0 4px; }
+.field .lbl {
+  font-size: 10px; letter-spacing: 0.22em; color: var(--ink-dim);
+  font-family: var(--mono); text-transform: uppercase;
+  padding-left: 6px;
+}
+
+.seg { display: flex; gap: 2px; padding: 3px; background: var(--panel-2); border-radius: 10px; border: 1px solid var(--line); }
+.seg button {
+  appearance: none; border: 0; background: transparent;
+  color: var(--ink-dim); font-family: var(--mono); font-size: 12px;
+  letter-spacing: 0.04em; padding: 7px 10px; border-radius: 7px; cursor: pointer;
+  min-width: 38px; transition: color .12s, background .12s;
+}
+.seg button:hover { color: var(--ink); }
+.seg button[aria-pressed="true"] { background: var(--accent); color: #111; font-weight: 600; }
+
+.stepper { display: flex; align-items: center; gap: 2px; padding: 3px; background: var(--panel-2); border-radius: 10px; border: 1px solid var(--line); }
+.stepper button {
+  appearance: none; border: 0; background: transparent; color: var(--ink-dim);
+  width: 30px; height: 34px; border-radius: 7px; cursor: pointer; font-size: 16px; line-height: 1;
+  font-family: var(--mono); transition: color .12s, background .12s;
+}
+.stepper button:hover { color: var(--ink); background: var(--line-2); }
+.stepper .val {
+  min-width: 28px; text-align: center; font-family: var(--mono); font-size: 14px; color: var(--ink);
+}
+
+.roll {
+  appearance: none; border: 1px solid var(--accent); background: var(--accent); color: #111;
+  font-family: var(--mono); font-size: 12px; letter-spacing: 0.22em; font-weight: 700;
+  text-transform: uppercase; padding: 11px 22px; border-radius: 10px; cursor: pointer;
+  transition: transform .08s, background .12s, color .12s;
+}
+.roll:hover { background: #fff; }
+.roll:active { transform: translateY(1px); }
+.roll[disabled] { opacity: .35; cursor: default; }
+
+/* RESULTS DOCK -------------------------------------------------------------------- */
+.dock {
+  position: absolute; left: 50%; bottom: 22px; transform: translateX(-50%);
+  z-index: 10;
+  display: flex; flex-direction: column; align-items: center; gap: 10px;
+  width: min(680px, calc(100% - 44px));
+  pointer-events: none;
+}
+
+.total {
+  font-family: var(--mono);
+  font-size: clamp(40px, 8vw, 72px);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1;
+  color: var(--ink);
+  text-shadow: 0 2px 30px rgba(0,0,0,0.6);
+  transition: opacity .25s;
+}
+.total .lbl {
+  display: block; font-size: 10px; letter-spacing: 0.32em; color: var(--ink-dim);
+  text-align: center; margin-bottom: 8px; font-weight: 500;
+}
+.total .num { display: block; text-align: center; }
+.total .num.pulse { animation: pop .35s ease-out; }
+@keyframes pop {
+  0%   { transform: scale(0.86); opacity: 0; }
+  60%  { transform: scale(1.04); opacity: 1; }
+  100% { transform: scale(1); }
+}
+
+.breakdown {
+  display: flex; flex-wrap: wrap; justify-content: center; gap: 6px;
+  font-family: var(--mono); font-size: 12px; color: var(--ink-dim);
+}
+.breakdown .chip {
+  background: rgba(17,17,20,0.7); border: 1px solid var(--line-2);
+  padding: 4px 9px; border-radius: 7px; color: var(--ink);
+  letter-spacing: 0.04em;
+}
+.breakdown .chip .k { color: var(--ink-dim); margin-right: 5px; }
+
+.hint {
+  position: absolute; left: 50%; bottom: 10px; transform: translateX(-50%);
+  font-family: var(--mono); font-size: 10px; letter-spacing: 0.24em; color: var(--ink-dim);
+  text-transform: uppercase; z-index: 10; pointer-events: none; opacity: .6;
+}
+
+/* small screens ------------------------------------------------------------------ */
+@media (max-width: 720px) {
+  .shelf { flex-direction: column; align-items: stretch; gap: 10px; padding: 12px; }
+  .controls { flex-wrap: wrap; justify-content: center; }
+  .brand { justify-content: center; }
+  .seg button { min-width: 32px; padding: 7px 6px; }
+}
