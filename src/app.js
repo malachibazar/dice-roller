@@ -71,7 +71,7 @@ scene.fog = new THREE.Fog(0x0a0a0b, 26, 60)
 const camera = new THREE.PerspectiveCamera(50, 1, 0.1, 200)
 
 // camera rig: azimuth + polar, looking at origin
-const rig = { dist: 17, az: 0.22, polar: 1.02 } // radians
+const rig = { dist: 15, az: 0.25, polar: 0.85 } // radians
 function updateCamera() {
   const d = rig.dist
   const sp = Math.sin(rig.polar), cp = Math.cos(rig.polar)
@@ -320,9 +320,6 @@ window.addEventListener('keydown', (e) => {
 // ---------------------------------------------------------------------------
 // Render loop
 // ---------------------------------------------------------------------------
-window.__DBG = { get dice(){return dice}, world, rollDice, isSettled, get rolling(){return rolling},
-  corners: () => cornerNDC.map(([x,y]) => { camera.updateProjectionMatrix(); camera.updateMatrixWorld(); const p = groundCorner(x,y); return p ? [p.x,p.y,p.z] : null }),
-  cam: () => ({ pos:[camera.position.x,camera.position.y,camera.position.z], fov:camera.fov, aspect:camera.aspect }) }
 const clock = new THREE.Clock()
 const step = 1 / 60
 let acc = 0
